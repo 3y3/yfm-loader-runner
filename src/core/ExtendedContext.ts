@@ -2,7 +2,7 @@ import type { NormalModule, AbstractFS } from './vfile';
 import type { Hash, SourceMap } from '../../@types';
 import { URLSearchParams } from 'url';
 import { LoaderContext } from './loader-runner';
-import { ExtendedVFile } from './vfile';
+import { VFile } from './vfile';
 import { runLoaders } from './runLoaders';
 import { promisify } from './utils';
 
@@ -66,7 +66,7 @@ export class ExtendedContext extends LoaderContext {
     readonly _module: NormalModule;
 
     constructor(
-        private readonly file: ExtendedVFile
+        private readonly file: VFile
     ) {
         super(file.path, file.loaders);
 

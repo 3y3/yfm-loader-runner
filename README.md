@@ -69,10 +69,71 @@ const jsfile = new VFile({
     loaders: loaders
 });
 
-const results = Promise.all([
+const results = await Promise.all([
     runLoaders(tsfile),
     runLoaders(jsfile),
 ]);
 
 console.log(results);
+```
+
+### Loader with options
+
+```ts
+import { runLoaders, VFile } from 'yfm-loader-runner';
+
+const loaders = [
+    [
+        {
+            loader: 'ts-loader',
+            options: { ext: 'ts' }
+        },
+        function(content) {
+            const options = this.getOptions();
+
+            return `${content} (${ext})`;
+        }
+    ]
+];
+
+const file = new VFile({
+    request: './some-file.ts',
+    contents: 'Hello, world',
+    loaders: loaders
+});
+
+console.log(await runLoaders(file));
+```
+
+### Utils for loader import
+
+```ts
+import { runLoaders, VFile } from 'yfm-loader-runner';
+import { include } from 'yfm-loader-runner/include';
+
+const loader = async (nameOrObject, options?) => {
+    if (typeof nameOrObject === 'string') {
+        nameOrObject = { loader: nameOrObject };
+    }
+
+    nameOrObject.options = Object.assign({}, nameOrObject.options, options);
+    
+    return [ nameOrObject, await include(nameOrObject) ];
+}
+
+const file = new VFile({
+    request: './some-file.ts',
+    contents: 'Hello, world',
+    loaders: await Promise.all([
+        loader('./common-loader'),
+        loader('./common-loader-with-options', { opt: 'ions' }),
+        loader({
+            loader: './esm-loader-with-options',
+            type: 'module',
+            options: { ext: 'ts' }
+        })
+    ])
+});
+
+console.log(await runLoaders(file));
 ```

@@ -1,8 +1,8 @@
 import { runLoaders as innerRunLoaders } from './loader-runner';
-import { ExtendedVFile } from './vfile';
+import { VFile } from './vfile';
 import { ExtendedContext } from './ExtendedContext';
 
-export async function runLoaders(vfile: ExtendedVFile) {
+export async function runLoaders(vfile: VFile) {
     const context = new ExtendedContext(vfile);
 
     const [ error, result ] = await innerRunLoaders({
