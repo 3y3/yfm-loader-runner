@@ -1,8 +1,8 @@
-import type { Hash, SourceMap } from '../../@types';
-import type { LoaderData } from './loader-runner';
+import type { Hash, SourceMap } from '../../../@types';
+import type { LoaderData } from '../loader-runner';
 import vfile, { VFile, VFileOptions } from 'vfile';
 import { AbstractFS } from './AbstractFS';
-import { parsePathQueryFragment } from './loader-runner/utils';
+import { parsePathQueryFragment } from '../loader-runner/utils';
 
 interface VFileConstructor {
     new(...args: Parameters<VFile>): VFile

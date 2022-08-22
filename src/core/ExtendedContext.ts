@@ -1,9 +1,8 @@
-import type { NormalModule } from './ExtendedVFile';
+import type { NormalModule, AbstractFS } from './vfile';
 import type { Hash, SourceMap } from '../../@types';
 import { URLSearchParams } from 'url';
-import { AbstractFS } from './AbstractFS';
 import { LoaderContext } from './loader-runner';
-import { ExtendedVFile } from './ExtendedVFile';
+import { ExtendedVFile } from './vfile';
 import { runLoaders } from './runLoaders';
 import { promisify } from './utils';
 
@@ -72,7 +71,7 @@ export class ExtendedContext extends LoaderContext {
         super(file.path, file.loaders);
 
         this.rootContext = file.cwd;
-        this.fs = file.fs || new AbstractFS();
+        this.fs = file.fs;
 
         this._module = file.module;
     }

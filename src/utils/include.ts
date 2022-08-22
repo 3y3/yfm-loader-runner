@@ -1,4 +1,4 @@
-import type { LoaderOptions } from '../transform';
+import type { LoaderOptions } from '../core';
 import { pathToFileURL } from 'url';
 
 export async function include(loader: LoaderOptions | string): Promise<Record<string, unknown>> {

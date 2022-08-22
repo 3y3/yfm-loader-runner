@@ -1,13 +1,11 @@
-import type { LoaderOptions, LoaderData } from '../transform';
-import { runLoaders, ExtendedVFile } from '../transform';
-import { include } from './include';
+import type { LoaderOptions, LoaderData } from '../../core';
+import { runLoaders, ExtendedVFile } from '../../core';
+import { include } from '../../utils/include';
 
 type Options = {
     path?: string;
     loaders: (string | LoaderOptions)[]
 };
-
-export { include };
 
 export async function transformer(source: string, options: Options) {
     const loaders = await Promise.all((options.loaders)

@@ -1,4 +1,4 @@
-import { NodeCallback } from '../../@types';
+import { NodeCallback } from '../../../@types';
 
 interface IStat {
     isFile(): boolean;
