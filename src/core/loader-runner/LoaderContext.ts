@@ -18,13 +18,13 @@ export class LoaderContext {
 
     requestCacheable = true;
 
-    resourcePath: undefined | string;
+    resourcePath = '';
 
-    resourceQuery: undefined | string;
+    resourceQuery = '';
 
-    resourceFragment: undefined | string;
+    resourceFragment = '';
 
-    context: null | string;
+    context: string;
 
     loaderIndex = 0;
 
@@ -37,7 +37,7 @@ export class LoaderContext {
     constructor(resource: undefined | string, loaders: LoaderData[]) {
         this.resource = resource;
 
-        this.context = this.resourcePath ? dirname(this.resourcePath) : null;
+        this.context = dirname(this.resourcePath);
         this.loaders = loaders.map(loader);
     }
 

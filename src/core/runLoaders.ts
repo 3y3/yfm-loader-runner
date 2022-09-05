@@ -1,3 +1,4 @@
+import { resolve } from 'path';
 import { runLoaders as innerRunLoaders } from './loader-runner';
 import { VFile } from './vfile';
 import { ExtendedContext } from './ExtendedContext';
@@ -6,7 +7,7 @@ export async function runLoaders(vfile: VFile) {
     const context = new ExtendedContext(vfile);
 
     const [ error, result ] = await innerRunLoaders({
-        resource: vfile.path,
+        resource: resolve(vfile.cwd, vfile.request),
 
         loaders: vfile.loaders,
 
@@ -17,8 +18,8 @@ export async function runLoaders(vfile: VFile) {
         }
     });
 
-    vfile.meta.fileDependencies = result.fileDependencies;
-    vfile.meta.missingDependencies = result.missingDependencies;
+    vfile.meta.fileDependencies = [...new Set(result.fileDependencies)];
+    vfile.meta.missingDependencies = [...new Set(result.missingDependencies)];
 
     if (result.result) {
         const [ source, map, meta ] = result.result;

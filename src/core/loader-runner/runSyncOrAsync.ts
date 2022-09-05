@@ -1,5 +1,5 @@
-import { LoaderContext } from './LoaderContext';
-import { MultiResultCallback } from './runLoaders';
+import type { LoaderContext } from './LoaderContext';
+import type { MultiResultCallback } from './runLoaders';
 
 export function runSyncOrAsync(
     fn: (this: LoaderContext, ...args: any[]) => any,

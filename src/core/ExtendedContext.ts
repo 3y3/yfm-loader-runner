@@ -1,10 +1,12 @@
 import type { NormalModule, AbstractFS } from './vfile';
 import type { Hash, SourceMap } from '../../@types';
+import { resolve } from 'path';
 import { URLSearchParams } from 'url';
 import { LoaderContext } from './loader-runner';
 import { VFile } from './vfile';
 import { runLoaders } from './runLoaders';
 import { promisify } from './utils';
+import { ExtendedVFile } from './vfile/ExtendedVFile';
 
 export interface Position {
     /**
@@ -68,7 +70,7 @@ export class ExtendedContext extends LoaderContext {
     constructor(
         private readonly file: VFile
     ) {
-        super(file.path, file.loaders);
+        super(resolve(file.cwd, file.request), file.loaders);
 
         this.rootContext = file.cwd;
         this.fs = file.fs;
@@ -110,45 +112,75 @@ export class ExtendedContext extends LoaderContext {
         return options as Hash;
     }
 
-    emitWarning(warning: string, place?: Position | Point, origin?: string) {
+    emitWarning(warning: string, place?: Position | Point, origin?: string): void {
         this.file.info(warning, place, origin);
     }
 
-    emitError(error: string, place?: Position | Point, origin?: string) {
+    emitError(error: string, place?: Position | Point, origin?: string): void {
         this.file.fail(error, place, origin);
     }
 
-    emitFile(name: string, content: string | Buffer, _sourceMap: any, _assetInfo: any) {
+    emitFile(name: string, content: string | Buffer, _sourceMap: any, _assetInfo: any): void {
         this.file.assets.set(name, { name, content });
     }
 
-    async loadModule(
+    loadModule(
         request: string,
         callback: (error: Error | null, source?: string | Buffer, map?: SourceMap | undefined, module?: NormalModule) => void
-    ) {
-        const file = this.file.from({
-            request,
-            cwd: this.file.cwd
-        });
+    ): void {
+        (async () => {
+            const file = this.file.from({
+                request: resolve(this.context, request),
+                cwd: this.file.cwd,
+                issuer: this.file
+            });
 
-        file.contents = await promisify(this.fs.readFile, this.fs)(file.path);
-
-        try {
-            const result = await runLoaders(file);
-            const { fileDependencies, missingDependencies } =  file.meta;
-
-            for (const dep of fileDependencies as string[]) {
-                this.addDependency(dep);
+            if (isCircular(file)) {
+                throw new ReferenceError(`Circular reference! Stack: \n\t->${ refStack(file).join('\n\t-> ') }`);
             }
 
-            for (const dep of missingDependencies as string[]) {
-                this.addMissingDependency(dep);
-            }
+            file.contents = await promisify(this.fs.readFile, this.fs)(file.path);
 
-            callback(null, result, file.map, file.module);
-        } catch (error) {
-            return callback(error as Error);
-        }
+            try {
+                const result = await runLoaders(file);
+                const { fileDependencies, missingDependencies } = file.meta;
+
+                for (const dep of fileDependencies as string[]) {
+                    this.addDependency(dep);
+                }
+
+                for (const dep of missingDependencies as string[]) {
+                    this.addMissingDependency(dep);
+                }
+
+                callback(null, result, file.map, file.module);
+            } catch (error) {
+                return callback(error as Error);
+            }
+        })().catch(callback);
     }
 }
 
+function isCircular(issuer: ExtendedVFile | undefined): boolean {
+    const paths = new Set();
+    while (issuer) {
+        if (paths.has(issuer.path)) {
+            return true;
+        }
+
+        paths.add(issuer.path);
+        issuer = issuer.issuer;
+    }
+
+    return false;
+}
+
+function refStack(issuer: ExtendedVFile | undefined): string[] {
+    const stack = [];
+    while (issuer) {
+        stack.unshift(issuer.request);
+        issuer = issuer.issuer;
+    }
+
+    return stack;
+}

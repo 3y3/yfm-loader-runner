@@ -10,6 +10,7 @@ interface VFileConstructor {
 
 type ExtendedOptions = {
     request: string;
+    issuer?: ExtendedVFile;
     fs?: AbstractFS;
     loaders?: LoaderData[] | PropertyDescriptor;
 }
@@ -19,6 +20,8 @@ function isDescriptor(loaders: any): loaders is PropertyDescriptor {
 }
 
 export class ExtendedVFile extends (vfile as VFile & VFileConstructor) {
+
+    public readonly issuer: ExtendedVFile | undefined;
 
     public readonly fs = new AbstractFS();
 
@@ -41,6 +44,8 @@ export class ExtendedVFile extends (vfile as VFile & VFileConstructor) {
 
     constructor(options: VFileOptions & ExtendedOptions) {
         super({ ...options, ...parsePathQueryFragment(options.request) });
+
+        this.issuer = options.issuer;
 
         if ('request' in options) {
             this.request = options.request;
